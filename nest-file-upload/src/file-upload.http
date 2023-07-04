@@ -1,0 +1,14 @@
+POST http://localhost:3000/file-upload
+# Content-Type과 boundary 설정
+Content-Type: multipart/form-data; boundary=test-file-upload
+
+# 파일 매개변수 정보 시작: --에 boundary에 설정한 값을 주면 데이터가 여러 개일 때 데이터를 구분할 수 있다.
+# 지금은 데이터가 파일 하나만 있으므로 boundary가 하나만 있다.
+--test-file-upload
+# Content-Disposition은 전송하려는 매개변수가 어떤 데이터인지 정의하는 공간이다.
+# form-data이고 이름은 file이며 파일 이름은 test.txt로 되어 있다.
+Content-Disposition: form-data; name="file"; filename="test.txt"
+
+여기에 텍스트 파일의 내용을 넣을 수 있습니다.
+--test-file-upload--
+# --[바운더리 문자]--는 form 전송을 위한 내용을 종료한다는 의미이다.

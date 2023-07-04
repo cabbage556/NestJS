@@ -1,0 +1,9 @@
+POST http://localhost:3000/file-upload
+Content-Type: multipart/form-data; boundary=image-file-upload
+
+--image-file-upload
+Content-Disposition: form-data; name="file"; filename="123.jpg"
+Content-Type: image/jpeg
+
+< 123.jpg
+--image-file-upload--

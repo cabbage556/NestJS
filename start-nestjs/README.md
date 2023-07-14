@@ -214,7 +214,7 @@ NestJS의 네이밍 컨벤션은 다음 규칙을 따른다.
 3. 같은 디렉터리에 있는 클래스는 index.ts를 통해 임포트하는 것을 권장한다.
 
     ```ts
-    // index.ts를 사용하는 경우
+    // index.ts를 사용하지 않는 경우
     import { MyFirstController } from "./controllers/my-first.controller";
     import { MySecondController } from "./controllers/my-second.controller";
 

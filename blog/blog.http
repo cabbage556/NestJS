@@ -1,0 +1,33 @@
+@server = http://localhost:3000
+
+### 게시글 생성
+POST {{server}}/blog
+Content-Type: application/json
+
+{
+    "title": "안녕하세요3",
+    "content": "NestJS입니다3",
+    "name": "NestJS3"
+}
+
+### 특정 게시글 조회
+GET {{server}}/blog/64b556657dc466ff8e9ef07c
+
+### 게시글 수정
+PUT {{server}}/blog/64b556657dc466ff8e9ef07c
+Content-Type: application/json
+
+{
+    "title": "몽고디비 리포지토리 연결하기1",
+    "content": "NestJS에 몽고디비 리포지토리를 연결하기 내용1",
+    "name": "cabbage"
+}
+
+### 특정 게시글 조회
+GET {{server}}/blog/64b555f0417e856fe28b146e
+
+### 게시글 삭제
+DELETE {{server}}/blog/64b5566a7dc466ff8e9ef07e
+
+### 전체 게시글 조회
+GET {{server}}/blog

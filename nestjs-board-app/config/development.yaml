@@ -1,0 +1,12 @@
+# 개발 환경 설정
+#   default.yaml + 개발 환경에서 필요한 정보
+db:
+  database: "board-app-development"
+  host: "localhost"
+  username: "taeyoon"
+  password: "1234"
+  autoLoadModels: true
+  synchronize: true
+
+jwt:
+  secret: "sd;#%@ldfdfo1o30d@#g"

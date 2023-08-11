@@ -1,0 +1,11 @@
+# 기본 설정
+#   개발 환경, 운영 환경에 모두 적용되는 설정들
+server:
+  port: 3000
+
+db:
+  type: "postgres"
+  port: 5432
+
+jwt:
+  expiresIn: 3600

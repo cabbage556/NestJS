@@ -4,22 +4,25 @@ import {
   Column,
   DataType,
   Default,
+  DeletedAt,
   ForeignKey,
   Model,
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { ProductTag } from 'src/productTags/model/productTag.model';
-import { ProductCategory } from 'src/productsCategories/model/productCategory.model';
-import { ProductSaleslocation } from 'src/productsSaleslocations/model/productSaleslocation.model';
-import { ProductProductTag } from 'src/products_productTags/model/product.productTag.model';
-import { User } from 'src/users/model/user.model';
+import ProductTag from 'src/productTags/model/productTag.model';
+import ProductCategory from 'src/productsCategories/model/productCategory.model';
+import ProductSaleslocation from 'src/productsSaleslocations/model/productSaleslocation.model';
+import ProductProductTag from 'src/products_productTags/model/product.productTag.model';
+import User from 'src/users/model/user.model';
 
 @Table
-export class Product extends Model {
+export default class Product extends Model {
   @PrimaryKey
-  @Default(DataType.UUIDV4)
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
+  })
   id: string;
 
   @Column
@@ -35,9 +38,15 @@ export class Product extends Model {
   @Column
   isSoldout: boolean;
 
+  @DeletedAt
+  deletedAt: Date;
+
   // 1:1
-  @BelongsTo(() => ProductSaleslocation)
+  @ForeignKey(() => ProductSaleslocation)
   @Column(DataType.UUID)
+  productSaleslocationId: string;
+
+  @BelongsTo(() => ProductSaleslocation)
   productSaleslocation: ProductSaleslocation;
 
   // 1:N

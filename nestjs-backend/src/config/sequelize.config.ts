@@ -13,8 +13,8 @@ export const sequelizeConfig: SequelizeModuleAsyncOptions = {
       password: configService.get('DATABASE_PASSWORD'),
       database: configService.get('DATABASE_DATABASE'),
       models: [__dirname + '/../**/*.model.*'],
-      autoLoadModels: configService.get('DATABASE_AUTOLOADMODELS'),
-      synchronize: configService.get('DATABASE_SYNCHRONIZE'),
+      autoLoadModels: Boolean(configService.get('DATABASE_AUTOLOADMODELS')),
+      synchronize: Boolean(configService.get('DATABASE_SYNCHRONIZE')),
     };
     console.log(options);
     return options;

@@ -5,11 +5,11 @@ import {
   Model,
   Table,
 } from 'sequelize-typescript';
-import { ProductTag } from 'src/productTags/model/productTag.model';
-import { Product } from 'src/products/model/product.model';
+import ProductTag from 'src/productTags/model/productTag.model';
+import Product from 'src/products/model/product.model';
 
 @Table
-export class ProductProductTag extends Model {
+export default class ProductProductTag extends Model {
   @ForeignKey(() => Product)
   @Column(DataType.UUID)
   productId: string;

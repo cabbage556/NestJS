@@ -7,10 +7,10 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import { Product } from 'src/products/model/product.model';
+import Product from 'src/products/model/product.model';
 
 @Table
-export class ProductCategory extends Model {
+export default class ProductCategory extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)

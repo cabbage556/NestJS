@@ -32,6 +32,13 @@ export class AuthService {
     };
   }
 
+  login2(user: IGetUser): { accessToken: string } {
+    const { id, email } = user;
+    return {
+      accessToken: this.getAccessToken(id, email),
+    };
+  }
+
   async validateUser(email: string, password: string): Promise<User> {
     const user = await this.usersService.getUserByEmail(email);
     if (!user) {

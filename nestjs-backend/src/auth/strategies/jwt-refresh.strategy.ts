@@ -1,8 +1,10 @@
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { Strategy } from 'passport-jwt';
 import { IGetUser } from 'src/commons/interfaces/get-user.decorator.interface';
 
+@Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
   constructor() {
     super({

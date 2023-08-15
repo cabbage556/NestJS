@@ -15,7 +15,7 @@ export class UsersService {
     private readonly userModel: typeof User, //
   ) {}
 
-  getUserByEmail(email: string) {
+  getUserByEmail(email: string): Promise<User> {
     return this.userModel.findOne({ where: { email } });
   }
 

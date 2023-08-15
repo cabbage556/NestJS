@@ -6,10 +6,13 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtAccessStrategy } from './strategies/jwt-access.strategy';
 import { jwtAccessConfig } from 'src/config/jwt-access.config';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { PassportModule } from '@nestjs/passport';
+import { LocalStrategy } from './strategies/local.strategy';
 
 @Module({
   imports: [
     UsersModule, //
+    PassportModule,
     JwtModule.registerAsync(jwtAccessConfig),
   ],
   controllers: [
@@ -19,6 +22,7 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
     AuthService, //
     JwtAccessStrategy,
     JwtRefreshStrategy,
+    LocalStrategy,
   ],
 })
 export class AuthModule {}

@@ -2,9 +2,10 @@ import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import User from './model/user.model';
-import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/commons/get-user.decorator';
 import { IGetUser } from 'src/commons/interfaces/get-user.decorator.interface';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtStrategy } from 'src/auth/guards/jwt-strategy.enum';
 
 @Controller('users')
 export class UsersController {
@@ -19,7 +20,7 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  @UseGuards(AuthGuard('access'))
+  @UseGuards(JwtAuthGuard(JwtStrategy.ACCESS))
   @Get()
   getUser(
     @GetUser() user: IGetUser, //

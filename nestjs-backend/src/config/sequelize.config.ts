@@ -15,6 +15,9 @@ export const sequelizeConfig: SequelizeModuleAsyncOptions = {
       models: [__dirname + '/../**/*.model.*'],
       autoLoadModels: Boolean(configService.get('DATABASE_AUTOLOADMODELS')),
       synchronize: Boolean(configService.get('DATABASE_SYNCHRONIZE')),
+      sync: {
+        alter: Boolean(configService.get('DATABASE_SYNC_ALTER')),
+      },
     };
     console.log(options);
     return options;

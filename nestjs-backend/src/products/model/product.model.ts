@@ -34,8 +34,9 @@ export default class Product extends Model {
   @Column(DataType.INTEGER)
   price: number;
 
-  @Default(false)
-  @Column
+  @Column({
+    defaultValue: false,
+  })
   isSoldout: boolean;
 
   @DeletedAt

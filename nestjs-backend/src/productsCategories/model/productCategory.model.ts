@@ -1,7 +1,6 @@
 import {
   Column,
   DataType,
-  Default,
   HasMany,
   Model,
   PrimaryKey,
@@ -12,8 +11,10 @@ import Product from 'src/products/model/product.model';
 @Table
 export default class ProductCategory extends Model {
   @PrimaryKey
-  @Default(DataType.UUIDV4)
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
+  })
   id: string;
 
   @Column

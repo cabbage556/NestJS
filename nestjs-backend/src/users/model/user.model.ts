@@ -1,7 +1,7 @@
 import {
   Column,
   DataType,
-  Default,
+  Index,
   Model,
   PrimaryKey,
   Table,
@@ -10,13 +10,25 @@ import {
 @Table
 export default class User extends Model {
   @PrimaryKey
-  @Default(DataType.UUIDV4)
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
+  })
   id: string;
 
+  @Index({
+    type: 'UNIQUE',
+    unique: true,
+  })
   @Column
   email: string;
 
   @Column
   password: string;
+
+  @Column
+  name: string;
+
+  @Column
+  age: number;
 }

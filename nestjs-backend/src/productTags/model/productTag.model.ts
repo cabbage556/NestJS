@@ -2,7 +2,6 @@ import {
   BelongsToMany,
   Column,
   DataType,
-  Default,
   Model,
   PrimaryKey,
   Table,
@@ -13,8 +12,10 @@ import ProductProductTag from 'src/products_productTags/model/product.productTag
 @Table
 export default class ProductTag extends Model {
   @PrimaryKey
-  @Default(DataType.UUIDV4)
-  @Column(DataType.UUID)
+  @Column({
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
+  })
   id: string;
 
   @Column

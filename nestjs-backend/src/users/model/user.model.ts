@@ -1,11 +1,13 @@
 import {
   Column,
   DataType,
+  HasMany,
   Index,
   Model,
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
+import PointTransaction from 'src/pointsTransactions/model/pointTransaction.model';
 
 @Table
 export default class User extends Model {
@@ -31,4 +33,13 @@ export default class User extends Model {
 
   @Column
   age: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    defaultValue: 0,
+  })
+  point: number;
+
+  @HasMany(() => PointTransaction)
+  pointTransactions: PointTransaction[];
 }

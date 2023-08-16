@@ -3,7 +3,6 @@ import {
   BelongsToMany,
   Column,
   DataType,
-  Default,
   DeletedAt,
   ForeignKey,
   Model,

@@ -4,8 +4,9 @@ import { ConfigModule } from '@nestjs/config';
 import { sequelizeConfig } from './config/sequelize.config';
 import { ProductsModule } from './products/products.module';
 import { ProductsCategoriesModule } from './productsCategories/productsCategories.module';
-import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { PointTransactionsModule } from './pointsTransactions/pointTransactions.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -16,8 +17,9 @@ import { AuthModule } from './auth/auth.module';
     SequelizeModule.forRootAsync(sequelizeConfig),
     ProductsModule,
     ProductsCategoriesModule,
-    UsersModule,
     AuthModule,
+    PointTransactionsModule,
+    PaymentsModule,
   ],
   controllers: [],
   providers: [],

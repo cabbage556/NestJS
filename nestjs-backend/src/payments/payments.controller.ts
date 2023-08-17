@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 
@@ -30,6 +30,17 @@ export class PaymentsController {
     // return this.paymentsService.getPaymentsWithReadCommittedLevel();
 
     // Read Committed - Phantom Read
-    return this.paymentsService.getPaymentsWithReadCommittedLevelRepeatedly();
+    // return this.paymentsService.getPaymentsWithReadCommittedLevelRepeatedly();
+
+    // Serializable
+    return this.paymentsService.getPaymentsWithLock();
+  }
+
+  @Get('/:id')
+  getPayment(
+    @Param('id') id: string, //
+  ) {
+    // Serializable
+    return this.paymentsService.getPaymentByPkWithLock(id);
   }
 }

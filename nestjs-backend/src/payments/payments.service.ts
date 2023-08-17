@@ -90,13 +90,13 @@ export class PaymentsService {
     try {
       const paymentWithAmount = await this.paymentModel.findByPk(
         'e200372e-98cf-45ee-9394-53c95bb17d67',
-        { attributes: ['amount'] },
+        { attributes: ['amount'], transaction: readCommittedLevel },
       );
       console.log(`결제 금액: ${paymentWithAmount.amount}`);
 
       const paymentWithAmountTax = await this.paymentModel.findByPk(
         'e200372e-98cf-45ee-9394-53c95bb17d67',
-        { attributes: ['amount', 'tax'] },
+        { attributes: ['amount', 'tax'], transaction: readCommittedLevel },
       );
       console.log(
         `세금 제외 결제 금액: ${
@@ -109,7 +109,10 @@ export class PaymentsService {
         // Non repeatable read 확인
         const paymentWithAmountCommission = await this.paymentModel.findByPk(
           'e200372e-98cf-45ee-9394-53c95bb17d67',
-          { attributes: ['amount', 'commission'] },
+          {
+            attributes: ['amount', 'commission'],
+            transaction: readCommittedLevel,
+          },
         );
         console.log(
           `수수료 제외 결제 금액: ${
@@ -132,10 +135,61 @@ export class PaymentsService {
     });
     try {
       setInterval(async () => {
-        console.log(await this.paymentModel.findAll());
+        console.log(
+          await this.paymentModel.findAll({ transaction: readCommittedLevel }),
+        );
       }, 3000);
     } catch (error) {
       await readCommittedLevel.rollback();
+    }
+  }
+
+  // Serializable lock
+  async getPaymentsWithLock() {
+    const serializableLevel = await this.sequelize.transaction({
+      isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE,
+    });
+    try {
+      // 락을 걸고 조회
+      const payment = await this.paymentModel.findByPk(
+        'e200372e-98cf-45ee-9394-53c95bb17d67',
+        {
+          transaction: serializableLevel,
+          lock: true,
+        },
+      );
+      console.log(payment);
+
+      // 커밋까지 대기
+      setTimeout(async () => {
+        await serializableLevel.commit();
+      }, 10000);
+    } catch (error) {
+      await serializableLevel.rollback();
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async getPaymentByPkWithLock(id: string) {
+    const serializableLevel = await this.sequelize.transaction({
+      isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE,
+    });
+    try {
+      // 조회 시 락이 풀릴 때까지 대기
+      console.log('레코드 조회');
+      console.time('레코드 조회');
+      const payment = await this.paymentModel.findByPk(id, {
+        transaction: serializableLevel,
+        lock: true,
+      });
+      console.timeEnd('레코드 조회');
+      console.log(payment);
+
+      await serializableLevel.commit();
+      return payment;
+    } catch (error) {
+      await serializableLevel.rollback();
+      throw new InternalServerErrorException();
     }
   }
 }

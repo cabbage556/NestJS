@@ -7,6 +7,7 @@ import { CreatePointTransactionDto } from './dto/create-pointTransaction.dto';
 import { IGetUser } from 'src/commons/interfaces/get-user.decorator.interface';
 import { UsersService } from 'src/users/users.service';
 import { Sequelize } from 'sequelize-typescript';
+import { Transaction } from 'sequelize';
 
 @Injectable()
 export class PointTransactionsService {
@@ -21,11 +22,13 @@ export class PointTransactionsService {
     createPointTransactionDto: CreatePointTransactionDto,
     user: IGetUser,
   ): Promise<PointTransaction> {
-    const { id: userId, email } = user;
+    const { id: userId } = user;
     const { impUid, amount } = createPointTransactionDto;
 
     // 트랜잭션 시작, createPointTransaction에 저장
-    const createPointTransaction = await this.sequelize.transaction();
+    const createPointTransaction = await this.sequelize.transaction({
+      isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE, // Serializable 격리 수준 적용
+    });
 
     try {
       // 결제 내역 저장
@@ -40,7 +43,8 @@ export class PointTransactionsService {
       );
 
       // 유저 포인트 업데이트
-      const user = await this.usersSerivce.getUserByEmail(email);
+      //    락을 걸고 유저 조회
+      const user = await this.usersSerivce.getUserByPkWithLock(userId);
       await user.update(
         { point: user.point + amount },
         { transaction: createPointTransaction },

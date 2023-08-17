@@ -19,6 +19,10 @@ export class UsersService {
     return this.userModel.findOne({ where: { email } });
   }
 
+  getUserByPkWithLock(id: string): Promise<User> {
+    return this.userModel.findByPk(id, { lock: true });
+  }
+
   async create(createUserDto: CreateUserDto): Promise<User> {
     const user = await this.getUserByEmail(createUserDto.email);
     if (user) {

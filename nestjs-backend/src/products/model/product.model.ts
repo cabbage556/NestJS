@@ -1,4 +1,5 @@
 import {
+  AfterCreate,
   BelongsTo,
   BelongsToMany,
   Column,
@@ -68,4 +69,13 @@ export default class Product extends Model {
   // N:M
   @BelongsToMany(() => ProductTag, () => ProductProductTag)
   productTags: ProductTag[];
+
+  // Hooks(트리거)
+  @AfterCreate
+  static consoleLog(instance: Product) {
+    // 테이블에 레코드 저장 후 저장된 레코드를 받아 콘솔에 출력
+    console.log('---------Hook---------');
+    console.log(instance);
+    console.log('---------Hook---------');
+  }
 }

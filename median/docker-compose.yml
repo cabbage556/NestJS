@@ -1,0 +1,17 @@
+# docker-compose.yml file
+# configuration file that will contain the specifications for running a docker container
+version: '3.8'
+services:
+  postgres:
+    image: postgres:13.5
+    restart: always
+    environment: # the environment variables passed to the container during initialization
+      - POSTGRES_USER=liberty556
+      - POSTGRES_PASSWORD=1234
+    volumes: # persist data in the host file system
+      - postgres:/var/lib/postgresql/data
+    ports: # map ports from the host machine to the container('host_port:container_port')
+      - '5432:5432'
+
+volumes:
+  postgres:

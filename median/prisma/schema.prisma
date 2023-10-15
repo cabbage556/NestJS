@@ -1,0 +1,32 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// This file is the main configuration file that contains your database schema.
+// This file is written in the Prisma Schema Language, which is a language that Prisma uses to define your database schema.
+
+// Generator
+//    Indicates that you want to generate Prisma Client, a type-safe query builder for your database.
+//    Prisma Client is used to send queries to your database.
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Data source
+//    Specifies your database connection.
+datasource db {
+  provider = "postgresql" // your database provider is PostgreSQL
+  url      = env("DATABASE_URL") // the database connection string is available in the DATABASE_URL environment variable
+}
+
+// Data model
+//    Defines your database models.
+//    Each model will be mapped to a table in the underlying database.
+model Article {
+  id          Int      @id @default(autoincrement())
+  title       String   @unique
+  description String?
+  body        String
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt // @updatedAt attribute will automatically update the field with the current timestamp whenever an article is modified.date the field with the current timestamp any time an article is modified
+}

@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  NotFoundException,
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
@@ -66,8 +67,12 @@ export class ArticlesController {
   @ApiOkResponse({
     type: ArticleEntity,
   })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.articlesService.findOne(id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    // handling exception manually
+    const article = await this.articlesService.findOne(id);
+    if (!article)
+      throw new NotFoundException(`Article with ${id} does not exist.`);
+    return article;
   }
 
   /**

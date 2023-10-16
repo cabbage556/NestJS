@@ -2,21 +2,28 @@
 // This file will contain the dummy data and queries needed to seed your database.
 
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 // initialize Prisma Client
 const prisma = new PrismaClient();
+const roundsOfHasing = 10;
 
 async function main() {
   // create two dummy users
+  const passwordSabin = await bcrypt.hash('password-sabin', roundsOfHasing);
+  const passwordAlex = await bcrypt.hash('password-alex', roundsOfHasing);
+
   const user1 = await prisma.user.upsert({
     where: {
       email: 'sabin@adams.com',
     },
-    update: {},
+    update: {
+      password: passwordSabin,
+    },
     create: {
       email: 'sabin@adams.com',
       name: 'Sabin Adams',
-      password: 'password-sabin',
+      password: passwordSabin,
     },
   });
 
@@ -24,11 +31,13 @@ async function main() {
     where: {
       email: 'alex@ruheni.com',
     },
-    update: {},
+    update: {
+      password: passwordAlex,
+    },
     create: {
       email: 'alex@ruheni.com',
       name: 'Alex Ruheni',
-      password: 'password-alex',
+      password: passwordAlex,
     },
   });
   console.log({ user1, user2 });

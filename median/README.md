@@ -534,3 +534,308 @@ export class ArticlesController {
 ```
 
 Now, `GET /articles/:id` returns the `author` object without the `password` field.
+
+# Install and configure `passport`
+
+`passport` is a popular authentication library for Node.js applications. It is highly configurable and supports a wide range of authentication strategies. It is meant to be used with the `Express` web framework, which NestJS is built on. NestJS has a first-party integration with `passport` called `@nestjs/passport` that makes it easy to use in your NestJS application.
+
+Install the following packages.
+
+```bash
+npm install @nestjs/passport passport @nestjs/jwt passport-jwt
+npm install -D @types/passport-jwt
+```
+
+You can configure `passport` in your application.
+
+```ts
+// auth.module.ts
+import { Module } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { PrismaModule } from 'src/prisma/prisma.module';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
+
+export const jwtSecret = 'dlfkjdaslfji4j5ioj34oij1kndfk;and4i95u19';
+
+@Module({
+  imports: [
+    PrismaModule, //
+    PassportModule,
+    JwtModule.register({
+      secret: jwtSecret,
+      signOptions: {
+        expiresIn: '5m', // 30s, 7d, 24h
+      },
+    }),
+  ],
+  controllers: [AuthController],
+  providers: [AuthService],
+})
+export class AuthModule {}
+```
+
+The `@nestjs/passport` module provides a `PassportModule` that you can import into your application. The `PassportModule` is a wrapper around the `passport` library that provides NestJS specific utilities.
+
+You also configured a `JwtModule` that you will use to generate and verify JWTs. The `JwtModule` is a wrapper arount the `jsonwebtoken` library. The `secret` provides a secret key that is used to sign the JWTs. The `expiresIn` object defines the expiration time of the JWTs. It is currently set to 5 minutes.
+
+# Implement JWT authentication strategy
+
+In Passport, a strategy is responsible for authenticating requests, which it accomplishes by implementing an authentication mechanism. You will implement a JWT authentication strategy that will be used to authenticate users.
+
+You will not using the `passport` package directly, but rather interact with the wrapper package `@nestjs/passport`, which will call the `passport` package under the hood. To configure a strategy with `@nestjs/passport`, you need to create a class that extends the `PassportStrategy` class. You will need to do two main things in this class.
+
+1. You will pass JWT strategy specific options and configuration to the `super()` method in the constructor.
+2. A `validate()` callback method that will interact with your database to fetch a user based on the JWT payload. If a user is found, the `validate()` method is expected to return the user object.
+
+First, create a new file called `jwt.strategy.ts` inside the `src/auth/strategy` directory.
+
+```bash
+touch src/auth/strategy/jwt.strategy.ts
+```
+
+Implement the `JwtStrategy` class.
+
+```ts
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { UsersService } from 'src/users/users.service';
+import { jwtSecret } from '../auth.module';
+
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+  constructor(
+    private usersService: UsersService, //
+  ) {
+    // pass JWT strategy specific options and configuration to the super() method
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: jwtSecret,
+    });
+  }
+
+  // validate() callback method that will interact with your database to fetch a user based on the JWT payload
+  // if a user is found, the validate() method is expected to return the user object
+  async validate(payload: { userId: number }) {
+    const user = await this.usersService.findOne(payload.userId);
+    if (!user) throw new UnauthorizedException();
+
+    return user;
+  }
+}
+```
+
+You have created a `JwtStrategy` class that extends the `PassportStrategy` class. The `PassportStrategy` class takes two arguments: a strategy implementation and the name of the strategy. Here you are using a predefined strategy from the `passport-jwt` library.
+
+You are passing some options to the `super()` method in the constructor. The `jwtFromRequest` option expects a method that can be used to extract the JWT from the request. In this case, you will use the standard approach of supplying a bearer token in the Authorization header of our API requests. The `secretOrKey` option tells the strategy what secret to use to verify the JWT.
+
+For the `passport-jwt`, Passport first verifies the JWT's signature and decodes the JSON. The decoded JSON is then passed to the `validate()` method. Based on the way JWT signing works, you're guaranteed receiving a valid token that was previously signed and issued by your app. The `validate()` method is expected to return a user object. If the user is not found, the `validate()` method throws an error.
+
+Add the new `JwtStrategy` as a provider in the `AuthModule`.
+
+```ts
+import { Module } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { PrismaModule } from 'src/prisma/prisma.module';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
+import { UsersModule } from 'src/users/users.module';
+import { JwtStrategy } from './strategy/jwt.strategy';
+
+// never store the secret directly in your codebase
+// NestJS provides the @nestjs/config package for loading secrets from environment variables
+export const jwtSecret = 'dlfkjdaslfji4j5ioj34oij1kndfk;and4i95u19';
+
+@Module({
+  imports: [
+    PrismaModule, //
+    PassportModule,
+    JwtModule.register({
+      secret: jwtSecret,
+      signOptions: {
+        expiresIn: '5m', // 30s, 7d, 24h
+      },
+    }),
+    UsersModule,
+  ],
+  controllers: [AuthController],
+  providers: [AuthService, JwtStrategy],
+})
+export class AuthModule {}
+```
+
+Now the `JwtStrategy` can be used by other modules. You have also added the `UsersModule` in the `imports`, because the `UsersService` is being used in the `JwtStrategy` class.
+
+To make `UsersService` accessible in the `JwtStrategy` class, you also need to add it in the `exports` of the `UsersModule`.
+
+```ts
+import { Module } from '@nestjs/common';
+import { UsersService } from './users.service';
+import { UsersController } from './users.controller';
+import { PrismaModule } from 'src/prisma/prisma.module';
+
+@Module({
+  imports: [PrismaModule],
+  controllers: [UsersController],
+  providers: [UsersService],
+  exports: [UsersService],
+})
+export class UsersModule {}
+```
+
+# Impleent JWT auth guard
+
+`Guards` are a NestJS construct that determines whether a request should be allowed to proceed or not. You will implement a custom `JwtAuthGuard` that will be used to protect routes that require authentication.
+
+Create a new file called `jwt-auth.guard.ts` inside the `src/auth` directory.
+
+```bash
+touch src/auth/jwt-auth.guard.ts
+```
+
+Implement the `JwtAuthGuard` class.
+
+```ts
+import { Injectable } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {}
+```
+
+The `AuthGuard` class expects the name of the strategy. In this case, you are using the `JwtStrategy` that you implemented, which is named `jwt`.
+
+You can now use this guard as a decorator to protect your endpoints. Add the `JwtAuthGuard` to routes in the `UsersController`.
+
+```ts
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+  UseGuards,
+} from '@nestjs/common';
+import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { UserEntity } from './entities/user.entity';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+
+@ApiTags('users')
+@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
+  /**
+   * POST /users endpoint
+   * @param createUserDto 유저 생성 데이터
+   * @returns 생성한 유저 데이터
+   */
+  @Post()
+  @ApiCreatedResponse({
+    type: UserEntity,
+  })
+  async create(@Body() createUserDto: CreateUserDto) {
+    return new UserEntity(await this.usersService.create(createUserDto));
+  }
+
+  /**
+   * GET /users endpoint
+   * @returns 유저 데이터 목록
+   */
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({
+    type: UserEntity,
+    isArray: true,
+  })
+  async findAll() {
+    const users = await this.usersService.findAll();
+    return users.map((user) => new UserEntity(user));
+  }
+
+  /**
+   * GET /users/:id endpoint
+   * @param id 유저 id
+   * @returns 유저 데이터
+   */
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({
+    type: UserEntity,
+  })
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return new UserEntity(await this.usersService.findOne(id));
+  }
+
+  /**
+   * PATCH /users/:id endpoint
+   * @param id 유저 id
+   * @param updateUserDto 유저 수정 데이터
+   * @returns 수정한 유저 데이터
+   */
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({
+    type: UserEntity,
+  })
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return new UserEntity(await this.usersService.update(id, updateUserDto));
+  }
+
+  /**
+   * DELETE /users/:id endpoint
+   * @param id 유저 id
+   * @returns 삭제한 유저 데이터
+   */
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({
+    type: UserEntity,
+  })
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return new UserEntity(await this.usersService.remove(id));
+  }
+}
+```
+
+# Integrate authentication in Swagger
+
+Currently there's no indication on Swagger that these endpoints are auth protected. You can add a `@ApiBearerAuth()` decorator to the controller to indicate that authentication is required.
+
+```ts
+@Delete(':id')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@ApiOkResponse({
+  type: UserEntity,
+})
+async remove(@Param('id', ParseIntPipe) id: number) {
+  return new UserEntity(await this.usersService.remove(id));
+}
+```
+
+It's currently not possible to authenticate yourself directly in Swagger so you can test these endpoints. To do this, you can add the `.addBearerAuth()` method call to the `SwaggerModule` setup in `main.ts`.
+
+```ts
+// main.ts
+const swaggerConfig = new DocumentBuilder()
+  .setTitle('Median')
+  .setDescription('The Median API description')
+  .setVersion('0.1')
+  .addBearerAuth()
+  .build();
+```
+
+You can now add a token by clicking on the `Authorize` button in Swagger. Swagger will add the token to your requests so you can query the protected endpoints.

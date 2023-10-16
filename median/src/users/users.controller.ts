@@ -7,12 +7,19 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UserEntity } from './entities/user.entity';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @ApiTags('users')
 @Controller('users')
@@ -37,6 +44,8 @@ export class UsersController {
    * @returns 유저 데이터 목록
    */
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOkResponse({
     type: UserEntity,
     isArray: true,
@@ -52,6 +61,8 @@ export class UsersController {
    * @returns 유저 데이터
    */
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOkResponse({
     type: UserEntity,
   })
@@ -66,6 +77,8 @@ export class UsersController {
    * @returns 수정한 유저 데이터
    */
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOkResponse({
     type: UserEntity,
   })
@@ -82,6 +95,8 @@ export class UsersController {
    * @returns 삭제한 유저 데이터
    */
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOkResponse({
     type: UserEntity,
   })

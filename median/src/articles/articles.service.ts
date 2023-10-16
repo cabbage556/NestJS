@@ -38,6 +38,10 @@ export class ArticlesService {
       where: {
         id,
       },
+      // return the author along with the Article object
+      include: {
+        author: true,
+      },
     });
   }
 

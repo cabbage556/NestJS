@@ -29,4 +29,22 @@ model Article {
   published   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt // @updatedAt attribute will automatically update the field with the current timestamp whenever an article is modified.date the field with the current timestamp any time an article is modified
+
+  // one-to-many relationship with the User model
+  //  author relation is optional, so it's still possible to create an article without an author
+  author      User?    @relation(fields: [authorId], references: [id])
+  authorId    Int?
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  name        String?
+  email       String    @unique
+  password    String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // one-to-many relationship with the Article model
+  //  user can have many articles, but an article can only have one outher
+  articles    Article[]
 }
